@@ -1,0 +1,48 @@
+# data
+data
+*.pkl
+.idea
+DQN-best
+
+# vscode
+__pycache__
+.vscode
+.idea/*
+
+# others
+_*/
+*log/
+#*results/
+log/
+log_*
+agent_log/
+train_log/
+NurSpecialist/__pycache__/
+NurSpecialist/*log/
+NurSpecialist/aux_log/
+preprocessing.log
+vital names.txt
+/optuna_playground/wandb/
+/optuna_playground/log/
+/optuna_playground/*.db
+/run_rl/*/wandb/
+/run_rl/*/log/
+/experiments/*/*.db
+/experiments/*.db
+/run_rl/best_log/
+output
+offline_results/NS/
+*.hdf5
+NurSpecialist/OberstSepsisEnv-discrete-biased_5000_ep0_rep0-DQN-NS_plain-greedy-False.db
+DTRGym/*/offline_data/*.csv
+DTRGym/*/offline_data/*.hdf5
+DTRGym/*/offline_data/*.h5
+DTRGym/*/offline_data/*.xlsx
+DTRGym/*/offline_data/*.png
+DTRGym/*/offline_data/*.pdf
+DTRGym/*/*plots/*.pdf
+DTRGym/*/*plots/*.png
+
+log/online/*
+log/offline/*
+ICML result*
