@@ -58,7 +58,7 @@ python get_start.py
 
 After running the example, you will see the following a plot like this. It shows the effect of the treatment given by the train RL policy in the simulation environment.
 
-![get_start](demo_visual.png)
+![get_start](demo/demo_visual.png)
 
 ## 🎈 Module Description <a name="module_description"></a>
 
