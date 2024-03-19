@@ -2,13 +2,7 @@ from typing import Any, Dict, Optional, Union
 
 import gymnasium as gym
 import numpy as np
-import tianshou
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
 from gymnasium.spaces import Box, Discrete
-from sklearn.metrics import f1_score
 from tianshou.data import Batch, to_torch, to_torch_as
 from tianshou.data import Collector, ReplayBuffer
 from tianshou.policy import BasePolicy, DQNPolicy

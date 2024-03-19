@@ -1,5 +1,4 @@
 import sys
-import optuna
 import numpy as np
 import torch
 from DTRBench.core.helper_fn import get_baseline_policy_class
