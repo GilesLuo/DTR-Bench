@@ -33,9 +33,9 @@ These instructions will get you a copy of the project up and running on your loc
 + Python 3.10: The project is developed using Python 3.10. It is recommended to use the same version to avoid compatibility issues.
 
 ### Installing
-1. Install the repository
+1. Install the DTR-Gym and the DTR-Bench
 ```
-git clone git@github.com:GilesLuo/SimMedEnv.git
+pip install dtrgym
 ```
 2. Install the required packages
 ```
@@ -151,6 +151,9 @@ export PYTHONPATH="."
 
 python DTRBench/visual_fn/visual.py
 ```
+
+### Download the Hyperparameters and Test Results
+The hyperparameters and test results are stored on [Kaggle](https://www.kaggle.com/datasets/mingchengzhu/dtr-bench-hyperparameters-and-test-results).
 
 ## Reference <a name = "reference"></a>
 If you use the DTR-Bench in your research, please cite the following paper:
