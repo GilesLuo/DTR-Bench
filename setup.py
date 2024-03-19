@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='DTR-Bench',
-    version='0.0.5',
+    version='0.1.0',
     author='Zhiyao Luo, Mingcheng Zhu',
     author_email='zhiyao.luo@eng.ox.ac.uk',
     description='DTR-Bench: An in silico Environment and Benchmark Platform for Reinforcement Learning Based '
