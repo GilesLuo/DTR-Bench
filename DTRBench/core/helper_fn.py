@@ -6,8 +6,8 @@ import torch
 import random
 from typing import Union
 from tianshou.policy import BasePolicy
-from DTRBench.core.policy import RandomPolicy, AlternatingPolicy, AllMaxPolicy, AllMinPolicy, OccurrenceWeightedPolicy, \
-    OfflineSARSAPolicy, DiscreteIQLPolicy
+from DTRBench.core.baseline_policy import RandomPolicy, MaxPolicy, MinPolicy
+
 from tianshou.policy import DQNPolicy, C51Policy, DDPGPolicy, \
     TD3Policy, SACPolicy, REDQPolicy, DiscreteSACPolicy, DiscreteBCQPolicy, DiscreteCQLPolicy, BCQPolicy, CQLPolicy, \
     ImitationPolicy
@@ -145,10 +145,8 @@ offpolicyLOOKUP = {
 }
 
 BASELINE_LOOKUP = {"random": {"policy": RandomPolicy},
-                   "max": {"policy": AllMaxPolicy},
-                   "min": {"policy": AllMinPolicy},
-                   "alt": {"policy": AlternatingPolicy},
-                   "weight": {"policy": OccurrenceWeightedPolicy}
+                   "max": {"policy": MaxPolicy},
+                   "min": {"policy": MinPolicy}
                    }
 
 
