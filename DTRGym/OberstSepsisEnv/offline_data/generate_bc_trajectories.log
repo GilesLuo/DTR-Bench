@@ -1,0 +1,36 @@
+generating data for 5000_ep0_rep0
+Policy already exists in file. Skipping.
+biased_buffer_5000_ep0_rep0 behaviroal reward: 0.505
+collating all batches, this may take a while
+saving to hdf5
+saving to buffer
+generating data for 5000_ep0_rep0.5
+Policy already exists in file. Skipping.
+biased_buffer_5000_ep0_rep0.5 behaviroal reward: 0.4368
+collating all batches, this may take a while
+saving to hdf5
+saving to buffer
+generating data for 5000_ep0_rep0.75
+Policy already exists in file. Skipping.
+biased_buffer_5000_ep0_rep0.75 behaviroal reward: 0.3334
+collating all batches, this may take a while
+saving to hdf5
+saving to buffer
+generating data for 5000_ep0.1_rep0
+Policy already exists in file. Skipping.
+biased_buffer_5000_ep0.1_rep0 behaviroal reward: 0.1848
+collating all batches, this may take a while
+saving to hdf5
+saving to buffer
+generating data for 5000_ep0.1_rep0.5
+Policy already exists in file. Skipping.
+biased_buffer_5000_ep0.1_rep0.5 behaviroal reward: 0.083
+collating all batches, this may take a while
+saving to hdf5
+saving to buffer
+generating data for 5000_ep0.1_rep0.75
+Policy already exists in file. Skipping.
+biased_buffer_5000_ep0.1_rep0.75 behaviroal reward: -0.0024
+collating all batches, this may take a while
+saving to hdf5
+saving to buffer
