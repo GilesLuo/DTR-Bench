@@ -154,14 +154,64 @@ class RLObjective:
         #     torch.save({"model": self.policy.state_dict()}, ckpt_path)
         #     return ckpt_path
         pass
-    
+
     def define_policy(self, *args, **kwargs) -> BasePolicy:
         return NotImplementedError
 
     def run(self, *args, **kwargs):
         raise NotImplementedError
 
-    def retrain_best_hparam(self, final_test_num:int,
+    def evaluate(self,
+                 policy_ckpts: str,
+                 test_env_names,
+                 final_test_num: int,
+                 num_seed: int = 5, **hparams):
+        """
+        num_seed is not directly used in this function, but it is used to get np.random.randint(0, 100000, 1)[0], so that
+        the test seed can be aligned with the test seed in retrain function.
+        It is generally unnecessary to change test seed if the number of testing is large (seed is more important for retraining).
+        Let's just use the same seed for all tests.
+        """
+        self.retrain = False
+        self.policy = self.define_policy(**hparams)
+        # todo: load checkpoint
+        self.policy.load_state_dict(torch.load(policy_ckpts))
+        self.policy.eval()
+
+        # rewrite meta_param
+        for key in self.meta_param.keys():
+            self.meta_param[key] = hparams[key]
+        if "seed" in hparams.keys():
+            print("Seed will be replaced by separate retrain seeds in retrain_best_hparam")
+
+        np.random.seed(0)
+        _ = np.random.randint(0, 100000, num_seed)
+        test_seed = np.random.randint(0, 100000, 1)[0]
+
+        for env_name in test_env_names:
+                result_path = os.path.join(self.meta_param["logdir"], env_name, f"{self.meta_param['algo_name']}-best",
+                                           str(test_seed), f"eval on {env_name}-{self.meta_param['algo_name']}-{test_seed}.csv")
+                self.meta_param["seed"] = test_seed
+                log_name = os.path.join(self.job_name, f"{self.meta_param['algo_name']}-best",
+                                        str(self.meta_param["seed"]))
+                log_path = os.path.join(self.meta_param["logdir"], log_name)
+                if not os.path.exists(result_path):
+                    print(f"evaluate {env_name} best hparam with seed {test_seed}")
+                    _, _, self.test_envs = make_env(self.env_name, int(self.meta_param["seed"]),
+                                                    1,
+                                                    1,
+                                                    num_actions=self.meta_param[
+                                                        "num_actions"])  # to reset seed
+                    set_global_seed(self.meta_param["seed"])
+
+                    test_env = DummyVectorEnv([lambda: gym.make(self.env_name, n_act=self.meta_param["num_actions"])])
+                    test_env.seed(int(test_seed))
+                    test_collector = Collector(self.policy, test_env, exploration_noise=False)
+                    result = test_collector.collect(n_episode=final_test_num * num_seed, render=False)
+                    result_df = pd.DataFrame({"rews": np.squeeze(result["rews"]), "lens": np.squeeze(result["lens"])})
+                    result_df.to_csv(str(result_path))
+
+    def retrain_best_hparam(self, final_test_num: int,
                             num_seed: int = 5,
                             **hparams):
         # define logger
