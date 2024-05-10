@@ -15,7 +15,9 @@ from .simglucose_env import create_SimGlucoseEnv_continuous, create_SimGlucoseEn
     create_SimGlucoseEnv_discrete_setting3, create_SimGlucoseEnv_discrete_setting4, \
     create_SimGlucoseEnv_discrete_setting5, create_SimGlucoseEnv_continuous_setting1, \
     create_SimGlucoseEnv_continuous_setting2, create_SimGlucoseEnv_continuous_setting3, \
-    create_SimGlucoseEnv_continuous_setting4, create_SimGlucoseEnv_continuous_setting5
+    create_SimGlucoseEnv_continuous_setting4, create_SimGlucoseEnv_continuous_setting5,\
+    create_SimGlucoseEnv_discrete_all_adolescents, create_SimGlucoseEnv_discrete_all_adults, \
+    create_SimGlucoseEnv_discrete_all_children
 from .ghaffari_cancer_env import create_GhaffariCancerEnv_discrete, create_GhaffariCancerEnv_continuous, \
     create_GhaffariCancerEnv_discrete_setting1, create_GhaffariCancerEnv_discrete_setting2, \
     create_GhaffariCancerEnv_discrete_setting3, create_GhaffariCancerEnv_discrete_setting4, \
@@ -27,7 +29,6 @@ import importlib
 from pathlib import Path
 import pkgutil
 
-
 """
 There are 5 settings for each environment:
 Setting 1: no pkpd, no state and obs noise, no missing data, 
@@ -38,47 +39,50 @@ Setting 5: pkpd, large state and obs noise, missing data.
 
 """
 registered_ids = ["AhnChemoEnv-continuous",
-                 "AhnChemoEnv-discrete",
-                 "AhnChemoEnv-discrete-setting1",
-                 "AhnChemoEnv-discrete-setting2",
-                 "AhnChemoEnv-discrete-setting3",
-                 "AhnChemoEnv-discrete-setting4",
-                 "AhnChemoEnv-discrete-setting5",
-                 "AhnChemoEnv-continuous-setting1",
-                 "AhnChemoEnv-continuous-setting2",
-                 "AhnChemoEnv-continuous-setting3",
-                 "AhnChemoEnv-continuous-setting4",
-                 "AhnChemoEnv-continuous-setting5",
-                 "OberstSepsisEnv-discrete",
-                 "OberstSepsisEnv-discrete-setting1",
-                 "OberstSepsisEnv-discrete-setting2",
-                 "OberstSepsisEnv-discrete-setting3",
-                 "OberstSepsisEnv-discrete-setting4",
-                 "OberstSepsisEnv-discrete-setting5",
-                 "GhaffariCancerEnv-discrete",
-                 "GhaffariCancerEnv-continuous",
-                 "GhaffariCancerEnv-discrete-setting1",
-                 "GhaffariCancerEnv-discrete-setting2",
-                 "GhaffariCancerEnv-discrete-setting3",
-                 "GhaffariCancerEnv-discrete-setting4",
-                 "GhaffariCancerEnv-discrete-setting5",
-                 "GhaffariCancerEnv-continuous-setting1",
-                 "GhaffariCancerEnv-continuous-setting2",
-                 "GhaffariCancerEnv-continuous-setting3",
-                 "GhaffariCancerEnv-continuous-setting4",
-                 "GhaffariCancerEnv-continuous-setting5",
-                 "SimGlucoseEnv-discrete",
-                 "SimGlucoseEnv-continuous",
-                 "SimGlucoseEnv-discrete-setting1",
-                 "SimGlucoseEnv-discrete-setting2",
-                 "SimGlucoseEnv-discrete-setting3",
-                 "SimGlucoseEnv-discrete-setting4",
-                 "SimGlucoseEnv-discrete-setting5",
-                 "SimGlucoseEnv-continuous-setting1",
-                 "SimGlucoseEnv-continuous-setting2",
-                 "SimGlucoseEnv-continuous-setting3",
-                 "SimGlucoseEnv-continuous-setting4",
-                 "SimGlucoseEnv-continuous-setting5"]
+                  "AhnChemoEnv-discrete",
+                  "AhnChemoEnv-discrete-setting1",
+                  "AhnChemoEnv-discrete-setting2",
+                  "AhnChemoEnv-discrete-setting3",
+                  "AhnChemoEnv-discrete-setting4",
+                  "AhnChemoEnv-discrete-setting5",
+                  "AhnChemoEnv-continuous-setting1",
+                  "AhnChemoEnv-continuous-setting2",
+                  "AhnChemoEnv-continuous-setting3",
+                  "AhnChemoEnv-continuous-setting4",
+                  "AhnChemoEnv-continuous-setting5",
+                  "OberstSepsisEnv-discrete",
+                  "OberstSepsisEnv-discrete-setting1",
+                  "OberstSepsisEnv-discrete-setting2",
+                  "OberstSepsisEnv-discrete-setting3",
+                  "OberstSepsisEnv-discrete-setting4",
+                  "OberstSepsisEnv-discrete-setting5",
+                  "GhaffariCancerEnv-discrete",
+                  "GhaffariCancerEnv-continuous",
+                  "GhaffariCancerEnv-discrete-setting1",
+                  "GhaffariCancerEnv-discrete-setting2",
+                  "GhaffariCancerEnv-discrete-setting3",
+                  "GhaffariCancerEnv-discrete-setting4",
+                  "GhaffariCancerEnv-discrete-setting5",
+                  "GhaffariCancerEnv-continuous-setting1",
+                  "GhaffariCancerEnv-continuous-setting2",
+                  "GhaffariCancerEnv-continuous-setting3",
+                  "GhaffariCancerEnv-continuous-setting4",
+                  "GhaffariCancerEnv-continuous-setting5",
+                  "SimGlucoseEnv-discrete",
+                  "SimGlucoseEnv-continuous",
+                  "SimGlucoseEnv-discrete-setting1",
+                  "SimGlucoseEnv-discrete-setting2",
+                  "SimGlucoseEnv-discrete-setting3",
+                  "SimGlucoseEnv-discrete-setting4",
+                  "SimGlucoseEnv-discrete-setting5",
+                  "SimGlucoseEnv-discrete-all_adolescents",
+                  "SimGlucoseEnv-discrete-all_adults",
+                  "SimGlucoseEnv-discrete-all_children",
+                  "SimGlucoseEnv-continuous-setting1",
+                  "SimGlucoseEnv-continuous-setting2",
+                  "SimGlucoseEnv-continuous-setting3",
+                  "SimGlucoseEnv-continuous-setting4",
+                  "SimGlucoseEnv-continuous-setting5"]
 
 envs = ["AhnChemoEnv",
         "GhaffariCancerEnv",
@@ -99,6 +103,7 @@ class BufferRegistry:
     """
     A registry for offline buffers. Not used in DTR-Bench paper.
     """
+
     def __init__(self):
         self.buffers = {env_name: {} for env_name in envs}
 

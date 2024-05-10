@@ -9,6 +9,7 @@ from simglucose.simulation.scenario_gen import RandomScenario
 from simglucose.simulation.scenario import CustomScenario
 from simglucose.controller.base import Action
 from simglucose.analysis.risk import risk_index
+
 import pandas as pd
 import numpy as np
 from importlib import resources
@@ -16,7 +17,7 @@ from gym.utils import seeding
 
 import gymnasium as gym
 from gymnasium import spaces
-from datetime import datetime
+from datetime import datetime, timedelta
 from DTRGym.utils import DiscreteActionWrapper
 
 
@@ -43,6 +44,7 @@ def risk_reward_fn(bg_current, bg_next, terminated, truncated, insulin):
 
     return reward
 
+
 def TIR_reward_fn(bg_current, bg_next, terminated, truncated, insulin):
     if terminated:
         reward = -100
@@ -61,7 +63,7 @@ def TIR_reward_fn(bg_current, bg_next, terminated, truncated, insulin):
         if delta_bg < 30:
             delta_reward = 0
         elif delta_bg < 60:
-            delta_reward = -1/30 * (delta_bg-30)
+            delta_reward = -1 / 30 * (delta_bg - 30)
         else:
             delta_reward = -1
 
@@ -96,6 +98,7 @@ class SinglePatientEnv(gym.Env):
                  random_meal: bool = False,
                  missing_rate=0.0,
                  sample_time=1,
+                 start_time=0,
                  **kwargs):
         self.env = None
         self.reward_fn = reward_fn
@@ -106,6 +109,8 @@ class SinglePatientEnv(gym.Env):
         self.random_meal = random_meal
         self.missing_rate = missing_rate
         T1DPatient.SAMPLE_TIME = sample_time
+        self.sample_time = sample_time
+        self.start_time = start_time
         self.last_obs = None
         self.observation_space = spaces.Box(low=10, high=600, shape=(1,), dtype=np.float32)
         # pump_upper_act = self.pump_params[self.pump_params["Name"] == self.INSULIN_PUMP_HARDWARE]["max_basal"].values
@@ -153,6 +158,7 @@ class SinglePatientEnv(gym.Env):
         if action < self.action_space.low or action > self.action_space.high:
             raise ValueError(f"action should be in [{self.action_space.low}, {self.action_space.high}]")
         self.t += self.env.sample_time
+        print(self.t)
         self.idx += 1
         # This gym only controls basal insulin
         act = Action(basal=action / 60, bolus=0)  # U/h -> U/min
@@ -176,8 +182,8 @@ class SinglePatientEnv(gym.Env):
                                 terminated=self.terminated, truncated=self.truncated,
                                 insulin=action)
         # reward = rew
-        info = {"state": state, "action": action, "instantaneous_reward": reward}
-
+        all_info = {"state": state, "action": action, "instantaneous_reward": reward}
+        all_info.update(info)
         return obs, reward, self.terminated, self.truncated, info
 
     def seed(self, seed):
@@ -204,16 +210,19 @@ class SinglePatientEnv(gym.Env):
         # the only sensor with sample time 5 is GuardianRT
         self.SENSOR_HARDWARE = 'GuardianRT'
 
-        patient = T1DPatient.withName(self.patient_name, random_init=random_init_bg, seed=seed2)
+        patient = T1DPatient.withName(self.patient_name, random_init_bg=random_init_bg, seed=seed2)
 
         sensor = CGMSensor.withName(self.SENSOR_HARDWARE, seed=seed3)
-
-        # hour = self.np_random.randint(low=0.0, high=24.0)
-        start_time = datetime(2018, 1, 1, 0, 0, 0)
+        if self.start_time > 24 * 60*60:
+            raise ValueError("start_time must be less than 24 hours")
+        time_string = str(timedelta(seconds=self.start_time))
+        hour, minute, second = map(int, time_string.split(':'))
+        start_time = datetime(2018, 1, 1, hour, minute, second)
         if self.random_meal:
             scenario = RandomScenario(start_time=start_time, seed=seed4)
         else:
-            scenario_info = [(7, 45), (12, 70), (15, 10), (18, 80)]  # (time, meal)
+            scenario_info = [(7-self.start_time/60/60, 45), (12-self.start_time/60/60, 70),
+                             (15-self.start_time/60/60, 10), (18-self.start_time/60/60, 80)]  # (time, meal)
             scenario = CustomScenario(start_time=start_time, scenario=scenario_info)
 
         pump = InsulinPump.withName(self.INSULIN_PUMP_HARDWARE)
@@ -247,13 +256,14 @@ class SinglePatientEnv(gym.Env):
 
 class RandomPatientEnv(gym.Env):
     def __init__(self, max_t: int = 24 * 60,
-                 candidates = None,
+                 candidates=None,
                  reward_fn=risk_reward_fn,
                  random_init_bg: bool = False,
                  random_obs: bool = False,
                  random_meal: bool = False,
                  missing_rate=0.0,
-                 sample_time=1,):
+                 sample_time=1,
+                 start_time=0):
         self.env = None
         self.reward_fn = reward_fn
         self.max_t = max_t
@@ -262,6 +272,7 @@ class RandomPatientEnv(gym.Env):
         self.random_meal = random_meal
         self.missing_rate = missing_rate
         self.candidates = candidates
+        self.start_time = start_time
         T1DPatient.SAMPLE_TIME = sample_time
         if candidates is None:
             self.candidates = SinglePatientEnv.patient_list
@@ -279,105 +290,228 @@ class RandomPatientEnv(gym.Env):
                          }
 
     def reset(self, seed: int = None, **kwargs):
-        self.env = SinglePatientEnv(patient_name=np.random.choice(self.candidates),
+        self.patient_name = self.np_random.choice(self.candidates)
+        self.env = SinglePatientEnv(patient_name=self.patient_name,
                                     max_t=self.max_t, reward_fn=self.reward_fn,
                                     random_init_bg=self.random_init_bg,
                                     random_obs=self.random_obs,
                                     random_meal=self.random_meal,
+                                    start_time=self.start_time,
                                     missing_rate=self.missing_rate,
                                     sample_time=T1DPatient.SAMPLE_TIME)
         return self.env.reset(seed=seed, **kwargs)
 
     def step(
-        self, action: ActType
+            self, action: ActType
     ) -> tuple[ObsType, SupportsFloat, bool, bool, dict[str, Any]]:
         return self.env.step(action)
 
 
-
-
-def create_SimGlucoseEnv_continuous(max_t: int = 24*60, n_act: int = 5, **kwargs):
+def create_SimGlucoseEnv_continuous(max_t: int = 24 * 60, n_act: int = 5, **kwargs):
     env = RandomPatientEnv(max_t, **kwargs)
     return env
 
 
-def create_SimGlucoseEnv_discrete(max_t: int = 24*60, n_act: int = 5, **kwargs):
+def create_SimGlucoseEnv_discrete(max_t: int = 24 * 60, n_act: int = 5, **kwargs):
     env = RandomPatientEnv(max_t, **kwargs)
     wrapped_env = DiscreteActionWrapper(env, n_act)
     return wrapped_env
 
 
-def create_SimGlucoseEnv_discrete_setting1(max_t: int = 24*60, n_act: int = 5):
-    env = RandomPatientEnv(max_t, random_patient=False, random_init=False,
+def create_SimGlucoseEnv_discrete_setting1(max_t: int = 24 * 60, n_act: int = 5):
+    env = SinglePatientEnv('adolescent#001', max_t, random_init_bg=False,
                            random_obs=False, random_meal=False,
                            missing_rate=0.0)
     wrapped_env = DiscreteActionWrapper(env, n_act)
     return wrapped_env
 
 
-def create_SimGlucoseEnv_discrete_setting2(max_t: int = 24*60, n_act: int = 5):
-    env = RandomPatientEnv(max_t, random_patient=True, random_init=False,
+def create_SimGlucoseEnv_discrete_setting2(max_t: int = 24 * 60, n_act: int = 5):
+    env = RandomPatientEnv(max_t, random_init_bg=False,
                            random_obs=False, random_meal=False,
                            missing_rate=0.0)
     wrapped_env = DiscreteActionWrapper(env, n_act)
     return wrapped_env
 
 
-def create_SimGlucoseEnv_discrete_setting3(max_t: int = 24*60, n_act: int = 5):
-    env = RandomPatientEnv(max_t, random_patient=True, random_init=True,
+def create_SimGlucoseEnv_discrete_setting3(max_t: int = 24 * 60, n_act: int = 5):
+    env = RandomPatientEnv(max_t, random_init_bg=True,
                            random_obs=True, random_meal=False,
                            missing_rate=0.0)
     wrapped_env = DiscreteActionWrapper(env, n_act)
     return wrapped_env
 
 
-def create_SimGlucoseEnv_discrete_setting4(max_t: int = 24*60, n_act: int = 5):
-    env = RandomPatientEnv(max_t, random_patient=True, random_init=True,
+def create_SimGlucoseEnv_discrete_setting4(max_t: int = 24 * 60, n_act: int = 5):
+    env = RandomPatientEnv(max_t, random_init_bg=True,
                            random_obs=True, random_meal=True,
                            missing_rate=0.0)
     wrapped_env = DiscreteActionWrapper(env, n_act)
     return wrapped_env
 
 
-def create_SimGlucoseEnv_discrete_setting5(max_t: int = 24*60, n_act: int = 5):
-    env = RandomPatientEnv(max_t, random_patient=True, random_init=True,
+def create_SimGlucoseEnv_discrete_setting5(max_t: int = 24 * 60, n_act: int = 5):
+    env = RandomPatientEnv(max_t, random_init_bg=True,
+                           random_obs=True, random_meal=True,
+                           missing_rate=0.5)
+    wrapped_env = DiscreteActionWrapper(env, n_act)
+    return wrapped_env
+
+def create_SimGlucoseEnv_discrete_all_adolescents1(max_t: int = 24 * 60, sample_time=1, n_act: int = 5, start_time=0):
+    env = RandomPatientEnv(max_t,
+                           sample_time=sample_time,
+                           candidates=["adolescent#001",
+                                       "adolescent#002",
+                                       "adolescent#003",
+                                       "adolescent#004",
+                                       "adolescent#005",
+                                       "adolescent#006",
+                                       "adolescent#007",
+                                       "adolescent#008",
+                                       "adolescent#009",
+                                       "adolescent#010"],
+                           random_init_bg=True,
+                           start_time=start_time,
+                           random_obs=True, random_meal=True,
+                           missing_rate=0.)
+    wrapped_env = DiscreteActionWrapper(env, n_act)
+    return wrapped_env
+
+
+def create_SimGlucoseEnv_discrete_all_adults1(max_t: int = 24 * 60, sample_time=1, n_act: int = 5, start_time=0):
+    env = RandomPatientEnv(max_t,
+                            sample_time=sample_time,
+                           candidates=["adult#001",
+                                       "adult#002",
+                                       "adult#003",
+                                       "adult#004",
+                                       "adult#005",
+                                       "adult#006",
+                                       "adult#007",
+                                       "adult#008",
+                                       "adult#009",
+                                       "adult#010"],
+                           random_init_bg=True,
+                           start_time=start_time,
+                           random_obs=True, random_meal=True,
+                           missing_rate=0.)
+    wrapped_env = DiscreteActionWrapper(env, n_act)
+    return wrapped_env
+
+
+def create_SimGlucoseEnv_discrete_all_children1(max_t: int = 24 * 60, sample_time=1, n_act: int = 5, start_time=0):
+    env = RandomPatientEnv(max_t,
+                           sample_time=sample_time,
+                           candidates=["child#001",
+                                       "child#002",
+                                       "child#003",
+                                       "child#004",
+                                       "child#005",
+                                       "child#006",
+                                       "child#007",
+                                       "child#008",
+                                       "child#009",
+                                       "child#010"],
+                           random_init_bg=True,
+                           start_time=start_time,
+                           random_obs=True, random_meal=True,
+                           missing_rate=0.)
+    wrapped_env = DiscreteActionWrapper(env, n_act)
+    return wrapped_env
+
+def create_SimGlucoseEnv_discrete_all_adolescents2(max_t: int = 24 * 60, sample_time=1, n_act: int = 5, start_time=0):
+    env = RandomPatientEnv(max_t,
+                           sample_time=sample_time,
+                           candidates=["adolescent#001",
+                                       "adolescent#002",
+                                       "adolescent#003",
+                                       "adolescent#004",
+                                       "adolescent#005",
+                                       "adolescent#006",
+                                       "adolescent#007",
+                                       "adolescent#008",
+                                       "adolescent#009",
+                                       "adolescent#010"],
+                           random_init_bg=True,
+                           start_time=start_time,
                            random_obs=True, random_meal=True,
                            missing_rate=0.5)
     wrapped_env = DiscreteActionWrapper(env, n_act)
     return wrapped_env
 
 
-def create_SimGlucoseEnv_continuous_setting1(max_t: int = 24*60, n_act: int = 5):
-    env = RandomPatientEnv(max_t, random_patient=False, random_init=False,
+def create_SimGlucoseEnv_discrete_all_adults2(max_t: int = 24 * 60, sample_time=1, n_act: int = 5, start_time=0):
+    env = RandomPatientEnv(max_t,
+                            sample_time=sample_time,
+                           candidates=["adult#001",
+                                       "adult#002",
+                                       "adult#003",
+                                       "adult#004",
+                                       "adult#005",
+                                       "adult#006",
+                                       "adult#007",
+                                       "adult#008",
+                                       "adult#009",
+                                       "adult#010"],
+                           random_init_bg=True,
+                           start_time=start_time,
+                           random_obs=True, random_meal=True,
+                           missing_rate=0.5)
+    wrapped_env = DiscreteActionWrapper(env, n_act)
+    return wrapped_env
+
+
+def create_SimGlucoseEnv_discrete_all_children2(max_t: int = 24 * 60, sample_time=1, n_act: int = 5, start_time=0):
+    env = RandomPatientEnv(max_t,
+                           sample_time=sample_time,
+                           candidates=["child#001",
+                                       "child#002",
+                                       "child#003",
+                                       "child#004",
+                                       "child#005",
+                                       "child#006",
+                                       "child#007",
+                                       "child#008",
+                                       "child#009",
+                                       "child#010"],
+                           random_init_bg=True,
+                           start_time=start_time,
+                           random_obs=True, random_meal=True,
+                           missing_rate=0.5)
+    wrapped_env = DiscreteActionWrapper(env, n_act)
+    return wrapped_env
+
+
+def create_SimGlucoseEnv_continuous_setting1(max_t: int = 24 * 60, n_act: int = 5):
+    env = SinglePatientEnv('adolescent#001', max_t, random_init_bg=False,
                            random_obs=False, random_meal=False,
                            missing_rate=0.0)
     return env
 
 
-def create_SimGlucoseEnv_continuous_setting2(max_t: int = 24*60, n_act: int = 5):
-    env = RandomPatientEnv(max_t, random_patient=True, random_init=False,
+def create_SimGlucoseEnv_continuous_setting2(max_t: int = 24 * 60, n_act: int = 5):
+    env = RandomPatientEnv(max_t, random_init_bg=False,
                            random_obs=False, random_meal=False,
                            missing_rate=0.0)
     return env
 
 
-def create_SimGlucoseEnv_continuous_setting3(max_t: int = 24*60, n_act: int = 5):
-    env = RandomPatientEnv(max_t, random_patient=True, random_init=True,
+def create_SimGlucoseEnv_continuous_setting3(max_t: int = 24 * 60, n_act: int = 5):
+    env = RandomPatientEnv(max_t, random_init_bg=True,
                            random_obs=True, random_meal=False,
                            missing_rate=0.0)
     return env
 
 
-def create_SimGlucoseEnv_continuous_setting4(max_t: int = 24*60, n_act: int = 5):
-    env = RandomPatientEnv(max_t, random_patient=True, random_init=True,
+def create_SimGlucoseEnv_continuous_setting4(max_t: int = 24 * 60, n_act: int = 5):
+    env = RandomPatientEnv(max_t, random_init_bg=True,
                            random_obs=True, random_meal=True,
                            missing_rate=0.0)
     return env
 
 
-def create_SimGlucoseEnv_continuous_setting5(max_t: int = 24*60, n_act: int = 5):
-    env = RandomPatientEnv(max_t, random_patient=True, random_init=True,
+def create_SimGlucoseEnv_continuous_setting5(max_t: int = 24 * 60, n_act: int = 5):
+    env = RandomPatientEnv(max_t, random_init_bg=True,
                            random_obs=True, random_meal=True,
                            missing_rate=0.5)
     return env
-
