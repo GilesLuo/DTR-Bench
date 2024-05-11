@@ -82,12 +82,12 @@ class SinglePatientEnv(gym.Env):
     '''
     metadata = {'render.modes': ['human']}
     # Accessing resources with files() in Python 3.9+
-    vpatient_params_path = resources.files('simglucose.params') / 'vpatient_params.csv'
-    with vpatient_params_path.open() as f:
-        patient_list = pd.read_csv(f)["Name"].to_list()
-    pump_params_path = resources.files('simglucose.params') / 'pump_params.csv'
-    with pump_params_path.open() as f:
-        pump_params = pd.read_csv(f)
+    patient_list = ['adolescent#001', 'adolescent#002', 'adolescent#003', 'adolescent#004', 'adolescent#005',
+                    'adolescent#006', 'adolescent#007', 'adolescent#008', 'adolescent#009', 'adolescent#010',
+                    'adult#001', 'adult#002', 'adult#003', 'adult#004', 'adult#005',
+                    'adult#006', 'adult#007', 'adult#008', 'adult#009', 'adult#010',
+                    'child#001', 'child#002', 'child#003', 'child#004', 'child#005',
+                    'child#006', 'child#007', 'child#008', 'child#009', 'child#010']
     INSULIN_PUMP_HARDWARE = 'Insulet'
 
     def __init__(self, patient_name: str,
@@ -148,7 +148,8 @@ class SinglePatientEnv(gym.Env):
 
         self.bg_records.append(bg)
 
-        info = {"state": state, "action": np.zeros(shape=(1,)), "instantaneous_reward": 0}
+        all_info = {"state": state, "action": np.zeros(shape=(1,)), "instantaneous_reward": 0}
+        all_info.update(info)
         return np.array(obs, dtype=np.float32), info
 
     def step(self, action):
@@ -158,7 +159,6 @@ class SinglePatientEnv(gym.Env):
         if action < self.action_space.low or action > self.action_space.high:
             raise ValueError(f"action should be in [{self.action_space.low}, {self.action_space.high}]")
         self.t += self.env.sample_time
-        print(self.t)
         self.idx += 1
         # This gym only controls basal insulin
         act = Action(basal=action / 60, bolus=0)  # U/h -> U/min
@@ -306,6 +306,8 @@ class RandomPatientEnv(gym.Env):
     ) -> tuple[ObsType, SupportsFloat, bool, bool, dict[str, Any]]:
         return self.env.step(action)
 
+    def seed(self, seed):
+        self.np_random, seed1 = seeding.np_random(seed=seed)
 
 def create_SimGlucoseEnv_continuous(max_t: int = 24 * 60, n_act: int = 5, **kwargs):
     env = RandomPatientEnv(max_t, **kwargs)
