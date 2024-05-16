@@ -18,7 +18,10 @@ from .simglucose_env import create_SimGlucoseEnv_continuous, create_SimGlucoseEn
     create_SimGlucoseEnv_continuous_setting4, create_SimGlucoseEnv_continuous_setting5,\
     create_SimGlucoseEnv_discrete_all_adolescents1, create_SimGlucoseEnv_discrete_all_adults1, \
     create_SimGlucoseEnv_discrete_all_children1, create_SimGlucoseEnv_discrete_all_adolescents2, \
-    create_SimGlucoseEnv_discrete_all_adults2, create_SimGlucoseEnv_discrete_all_children2
+    create_SimGlucoseEnv_discrete_all_adults2, create_SimGlucoseEnv_discrete_all_children2, \
+    create_SimGlucoseEnv_continuous_all_adolescents1, create_SimGlucoseEnv_continuous_all_adults1, \
+    create_SimGlucoseEnv_continuous_all_children1, create_SimGlucoseEnv_continuous_all_adolescents2, \
+    create_SimGlucoseEnv_continuous_all_adults2, create_SimGlucoseEnv_continuous_all_children2
 from .ghaffari_cancer_env import create_GhaffariCancerEnv_discrete, create_GhaffariCancerEnv_continuous, \
     create_GhaffariCancerEnv_discrete_setting1, create_GhaffariCancerEnv_discrete_setting2, \
     create_GhaffariCancerEnv_discrete_setting3, create_GhaffariCancerEnv_discrete_setting4, \
@@ -86,7 +89,14 @@ registered_ids = ["AhnChemoEnv-continuous",
                   "SimGlucoseEnv-continuous-setting2",
                   "SimGlucoseEnv-continuous-setting3",
                   "SimGlucoseEnv-continuous-setting4",
-                  "SimGlucoseEnv-continuous-setting5"]
+                  "SimGlucoseEnv-continuous-setting5",
+                  "SimGlucoseEnv-continuous-all_adolescents1",
+                  "SimGlucoseEnv-continuous-all_adults1",
+                  "SimGlucoseEnv-continuous-all_children1",
+                  "SimGlucoseEnv-continuous-all_adolescents2",
+                  "SimGlucoseEnv-continuous-all_adults2",
+                  "SimGlucoseEnv-continuous-all_children2",
+                  ]
 
 envs = ["AhnChemoEnv",
         "GhaffariCancerEnv",

@@ -517,3 +517,122 @@ def create_SimGlucoseEnv_continuous_setting5(max_t: int = 24 * 60, n_act: int = 
                            random_obs=True, random_meal=True,
                            missing_rate=0.5)
     return env
+
+
+def create_SimGlucoseEnv_continuous_all_adolescents1(max_t: int = 24 * 60, sample_time=1, n_act: int = 5, start_time=0):
+    env = RandomPatientEnv(max_t,
+                           sample_time=sample_time,
+                           candidates=["adolescent#001",
+                                       "adolescent#002",
+                                       "adolescent#003",
+                                       "adolescent#004",
+                                       "adolescent#005",
+                                       "adolescent#006",
+                                       "adolescent#007",
+                                       "adolescent#008",
+                                       "adolescent#009",
+                                       "adolescent#010"],
+                           random_init_bg=True,
+                           start_time=start_time,
+                           random_obs=True, random_meal=True,
+                           missing_rate=0.)
+    return env
+
+
+def create_SimGlucoseEnv_continuous_all_adults1(max_t: int = 24 * 60, sample_time=1, n_act: int = 5, start_time=0):
+    env = RandomPatientEnv(max_t,
+                            sample_time=sample_time,
+                           candidates=["adult#001",
+                                       "adult#002",
+                                       "adult#003",
+                                       "adult#004",
+                                       "adult#005",
+                                       "adult#006",
+                                       "adult#007",
+                                       "adult#008",
+                                       "adult#009",
+                                       "adult#010"],
+                           random_init_bg=True,
+                           start_time=start_time,
+                           random_obs=True, random_meal=True,
+                           missing_rate=0.)
+    return env
+
+
+def create_SimGlucoseEnv_continuous_all_children1(max_t: int = 24 * 60, sample_time=1, n_act: int = 5, start_time=0):
+    env = RandomPatientEnv(max_t,
+                           sample_time=sample_time,
+                           candidates=["child#001",
+                                       "child#002",
+                                       "child#003",
+                                       "child#004",
+                                       "child#005",
+                                       "child#006",
+                                       "child#007",
+                                       "child#008",
+                                       "child#009",
+                                       "child#010"],
+                           random_init_bg=True,
+                           start_time=start_time,
+                           random_obs=True, random_meal=True,
+                           missing_rate=0.)
+    return env
+
+def create_SimGlucoseEnv_continuous_all_adolescents2(max_t: int = 24 * 60, sample_time=1, n_act: int = 5, start_time=0):
+    env = RandomPatientEnv(max_t,
+                           sample_time=sample_time,
+                           candidates=["adolescent#001",
+                                       "adolescent#002",
+                                       "adolescent#003",
+                                       "adolescent#004",
+                                       "adolescent#005",
+                                       "adolescent#006",
+                                       "adolescent#007",
+                                       "adolescent#008",
+                                       "adolescent#009",
+                                       "adolescent#010"],
+                           random_init_bg=True,
+                           start_time=start_time,
+                           random_obs=True, random_meal=True,
+                           missing_rate=0.5)
+    return env
+
+
+def create_SimGlucoseEnv_continuous_all_adults2(max_t: int = 24 * 60, sample_time=1, n_act: int = 5, start_time=0):
+    env = RandomPatientEnv(max_t,
+                            sample_time=sample_time,
+                           candidates=["adult#001",
+                                       "adult#002",
+                                       "adult#003",
+                                       "adult#004",
+                                       "adult#005",
+                                       "adult#006",
+                                       "adult#007",
+                                       "adult#008",
+                                       "adult#009",
+                                       "adult#010"],
+                           random_init_bg=True,
+                           start_time=start_time,
+                           random_obs=True, random_meal=True,
+                           missing_rate=0.5)
+    return env
+
+
+def create_SimGlucoseEnv_continuous_all_children2(max_t: int = 24 * 60, sample_time=1, n_act: int = 5, start_time=0):
+    env = RandomPatientEnv(max_t,
+                           sample_time=sample_time,
+                           candidates=["child#001",
+                                       "child#002",
+                                       "child#003",
+                                       "child#004",
+                                       "child#005",
+                                       "child#006",
+                                       "child#007",
+                                       "child#008",
+                                       "child#009",
+                                       "child#010"],
+                           random_init_bg=True,
+                           start_time=start_time,
+                           random_obs=True, random_meal=True,
+                           missing_rate=0.5)
+    return env
