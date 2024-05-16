@@ -16,8 +16,8 @@ def parse_args():
     # training-aid hyperparameters
     parser.add_argument("--sampler", type=str, default="TPESampler", choices=["TPESampler", "BruteForceSampler"])
     parser.add_argument("--n_trials", type=int, default=1)
-    parser.add_argument("--task", type=str, default="AhnChemoEnv")
-    parser.add_argument("--setting", type=int, default=1)
+    parser.add_argument("--task", type=str, default="SimGlucoseEnv")
+    parser.add_argument("--setting", type=str, default="all_adolescents2")
     parser.add_argument("--logdir", type=str, default="settings_db")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--training_num", type=int, default=1)
@@ -29,7 +29,7 @@ def parse_args():
     parser.add_argument("--buffer_size", type=int, default=5e4)
     parser.add_argument("--linear", type=to_bool, default=False)
     parser.add_argument("--cat_num", type=int, default=1)
-    parser.add_argument("--policy_name", type=str, default="DQN",
+    parser.add_argument("--policy_name", type=str, default="DDQN",
                         choices=["DQN", "DDQN", "DQN-rnn",
                                  "DDQN-rnn", "DQN-dueling", "DDQN-dueling",
                                  "C51", "C51-rnn", "discrete-SAC", "discrete-SAC-rnn"])
@@ -41,6 +41,8 @@ def parse_args():
 
 
 if __name__ == "__main__":
+    import warnings
+    warnings.filterwarnings("ignore")
     torch.cuda.empty_cache()
     args = parse_args()
 
@@ -55,7 +57,7 @@ if __name__ == "__main__":
     Path(args.logdir).mkdir(parents=True, exist_ok=True)
 
     policy_type = get_policy_type(args.policy_name, offline=False)
-    args.task += f"-{policy_type}-setting{args.setting}"
+    args.task += f"-{policy_type}-{args.setting}"
     study_name = f"{args.task}-{args.policy_name}"
     study_path = os.path.abspath(os.path.join(args.logdir, study_name)) + ".db"
 
