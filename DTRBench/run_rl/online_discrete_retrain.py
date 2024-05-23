@@ -16,8 +16,11 @@ def parse_args():
     # training-aid hyperparameters
     parser.add_argument("--sampler", type=str, default="TPESampler", choices=["TPESampler", "BruteForceSampler"])
     parser.add_argument("--task", type=str, default="AhnChemoEnv")
+    parser.add_argument("--task_postfix", type=str, default=None)
     parser.add_argument("--setting", type=int, default=2)
-    parser.add_argument("--logdir", type=str, default="settings_db")
+    parser.add_argument("--logdir", type=str, default="log")
+    parser.add_argument("--db_dir", type=str, default="settings_db")
+
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--training_num", type=int, default=1)
     parser.add_argument("--test_num", type=int, default=100)
@@ -32,6 +35,7 @@ def parse_args():
                         choices=["DQN", "DDQN", "DQN-rnn",
                                  "DDQN-rnn", "DQN-dueling", "DDQN-dueling",
                                  "C51", "C51-rnn", "discrete-SAC", "discrete-SAC-rnn"])
+    
     parser.add_argument("--scale_obs", type=int, default=0)
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
     args = parser.parse_known_args()[0]
@@ -53,14 +57,17 @@ if __name__ == "__main__":
 
     Path(args.logdir).mkdir(parents=True, exist_ok=True)
 
-    policy_type = get_policy_type(args.policy_name, offline=False)
-    args.task += f"-{policy_type}-setting{args.setting}"
-    if args.setting == 5:
-        study_task_name = f"{args.task[:-1]}4"
+    if args.task_postfix is None:
+        study_task_name = args.task + f"-discrete-setting{args.setting}"
+        if args.setting == 5:
+            study_task_name = f"{args.task[:-1]}4"
+        study_name = f"{study_task_name}-{args.policy_name}"
+        study_path = os.path.abspath(os.path.join(args.logdir, study_name)) + ".db"
     else:
-        study_task_name = args.task
-    study_name = f"{study_task_name}-{args.policy_name}"
-    study_path = os.path.abspath(os.path.join(args.logdir, study_name)) + ".db"
+        study_task_name = args.task + f"-discrete-{args.task_postfix}"
+        study_name = f"{study_task_name}-{args.policy_name}"
+        db_name = args.task + f"-discrete-setting1-{args.policy_name}"
+        study_path = os.path.abspath(os.path.join(args.db_dir, db_name)) + ".db"
 
     # init hparam space
     hparam_space = hparam_class(args.policy_name,
@@ -76,7 +83,7 @@ if __name__ == "__main__":
                                 linear=args.linear
                                 )
     # init obj
-    obj = obj_class(args.task, hparam_space, device=args.device, multi_obj=args.multi_obj,
+    obj = obj_class(study_task_name, hparam_space, device=args.device, multi_obj=args.multi_obj,
                     logger="tensorboard",
                     )
 
