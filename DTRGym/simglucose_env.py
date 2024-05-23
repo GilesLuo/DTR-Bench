@@ -636,3 +636,32 @@ def create_SimGlucoseEnv_continuous_all_children2(max_t: int = 24 * 60, sample_t
                            random_obs=True, random_meal=True,
                            missing_rate=0.5)
     return env
+
+
+def create_SimGlucoseEnv_continuous_adult1(max_t: int = 24 * 60, n_act: int = 5):
+    env = SinglePatientEnv('adult#001', max_t, random_init_bg=False,
+                           random_obs=False, random_meal=False,
+                           missing_rate=0.0)
+    return env
+
+
+def create_SimGlucoseEnv_discrete_adult1(max_t: int = 24 * 60, n_act: int = 5):
+    env = SinglePatientEnv('adult#001', max_t, random_init_bg=False,
+                           random_obs=False, random_meal=False,
+                           missing_rate=0.0)
+    wrapped_env = DiscreteActionWrapper(env, n_act)
+    return wrapped_env
+
+def create_SimGlucoseEnv_continuous_child1(max_t: int = 24 * 60, n_act: int = 5):
+    env = SinglePatientEnv('child#001', max_t, random_init_bg=False,
+                           random_obs=False, random_meal=False,
+                           missing_rate=0.0)
+    return env
+
+
+def create_SimGlucoseEnv_discrete_child1(max_t: int = 24 * 60, n_act: int = 5):
+    env = SinglePatientEnv('child#001', max_t, random_init_bg=False,
+                           random_obs=False, random_meal=False,
+                           missing_rate=0.0)
+    wrapped_env = DiscreteActionWrapper(env, n_act)
+    return wrapped_env

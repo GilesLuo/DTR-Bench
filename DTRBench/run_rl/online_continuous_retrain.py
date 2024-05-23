@@ -13,7 +13,8 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--task", type=str, default="AhnChemoEnv")
-    parser.add_argument("--setting", type=int, default=2)
+    parser.add_argument("--task_postfix", type=str, default=None)
+    parser.add_argument("--setting", type=int, default=1)
     parser.add_argument("--logdir", type=str, default="settings_db")
 
     parser.add_argument("--seed", type=int, default=0)
@@ -48,11 +49,13 @@ if __name__ == "__main__":
     hparam_class = get_hparam_class(args.policy_name, offline=False)
     obj_class = get_obj_class(args.policy_name, offline=False)
 
-    args.task += f"-continuous-setting{args.setting}"
-    if args.setting == 5:
-        study_task_name = f"{args.task[:-1]}4"
+    if args.task_postfix is None:
+        study_task_name = args.task + f"-continuous-setting{args.setting}"
+        if args.setting == 5:
+            study_task_name = f"{args.task[:-1]}4"
     else:
-        study_task_name = args.task
+        study_task_name = args.task + f"-continuous-{args.task_postfix}"
+
     study_name = f"{study_task_name}-{args.policy_name}"
     study_path = os.path.abspath(os.path.join(args.logdir, study_name)) + ".db"
 

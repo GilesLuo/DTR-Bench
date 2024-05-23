@@ -3,6 +3,7 @@ data
 *.pkl
 .idea
 DQN-best
+settings_db
 
 # vscode
 __pycache__
