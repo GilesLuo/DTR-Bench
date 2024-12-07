@@ -39,7 +39,7 @@ pip install DTRGym
 ```
 2. Install the required packages
 ```
-cd DTRBench
+cd DTR-Bench
 pip install -r requirements.txt
 ```
 
@@ -103,14 +103,14 @@ Please remember to import [DTRGym](DTRGym/__init__.py) to register the simulatio
 1. Discrete policies
 todo: change the cd path
 ```
-cd DTRBench
+cd DTR-Bench
 export PYTHONPATH="."
 
 python DTRBench/run_rl/online_discrete_search.py --policy_name=DQN --task SimGlucoseEnv --n_trials 100 --num_actions 11 --setting 1
 ```
 2. continuous policies
 ```
-cd DTRBench
+cd DTR-Bench
 export PYTHONPATH="."
 
 python DTRBench/run_rl/online_continuous_search.py --policy_name=DDPG --task OberstSepsisEnv --n_trials 100 --setting 1
@@ -119,7 +119,7 @@ python DTRBench/run_rl/online_continuous_search.py --policy_name=DDPG --task Obe
 ### Online Training and Testing
 1. Discrete Policies
 ```
-cd DTRBench
+cd DTR-Bench
 export PYTHONPATH="."
 conda activate torch
 
@@ -128,7 +128,7 @@ python DTRBench/run_rl/online_discrete_retrain.py --policy_name=DQN --task SimGl
 
 2. Continuous Policies
 ```
-cd DTRBench
+cd DTR-Bench
 export PYTHONPATH="."
 conda activate torch
 
@@ -137,7 +137,7 @@ python DTRBench/run_rl/online_continuous_retrain.py --policy_name=DDPG --task Si
 
 3. Baseline Policies (RandomPolicy, MaxPolicy, MinPolicy)
 ```
-cd DTRBench
+cd DTR-Bench
 export PYTHONPATH="."
 conda activate torch
 
@@ -146,7 +146,7 @@ python DTRBench/run_rl/online_baseline.py --task OberstSepsisEnv
 
 ### Visualisation
 ```
-cd DTRBench
+cd DTR-Bench
 export PYTHONPATH="."
 
 python DTRBench/visual_fn/visual.py
